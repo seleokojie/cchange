@@ -1,0 +1,9 @@
+node_modules
+packing-lock.json
+assets/.DS_Store
+assets/images/.DS_Store
+.idea/discord.xml
+.idea/cChange.iml
+.idea/misc.xml
+.idea/modules.xml
+.DS_Store

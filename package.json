@@ -1,0 +1,25 @@
+{
+  "name": "cChange",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "webpack --watch --mode=development",
+    "postinstall": "http-server -g http-server"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/core": "^7.12.9",
+    "@babel/preset-env": "^7.12.7",
+    "babel-loader": "^8.2.1",
+    "d3": "^7.8.4",
+    "gsap": "^3.5.1",
+    "http-server": "14.1.1",
+    "jquery": "^3.5.1",
+    "three": "^0.152.2",
+    "webpack": "^5.6.0",
+    "webpack-cli": "^4.2.0"
+  }
+}

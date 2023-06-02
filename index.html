@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:image" content="./assets/images/featured-image.png" data-addsearch="no_crop">
+    <link rel="stylesheet" type="text/css" href="stylesheets/main.css" media="screen"/>
+    <link rel="icon" type="image/png" href="./assets/images/cChange_Logo.png">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script src="https://use.fontawesome.com/releases/v5.15.1/js/all.js" data-auto-a11y="true"></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.5.1/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/102/three.js"></script>
+    <title>Climate Change Visualizer</title>
+</head>
+<body>
+<h1 id="page-header">Surface Temperature Over a Century</h1>
+<div id="years-box">
+    <ul id="years-list">
+        <li id="1910"><i class="fas fa-check-square checked"></i>1910s</li>
+        <li id="1920"><i class="fas fa-check-square checked"></i>1920s</li>
+        <li id="1930"><i class="fas fa-check-square checked"></i>1930s</li>
+        <li id="1940"><i class="fas fa-check-square checked"></i>1940s</li>
+        <li id="1980"><i class="fas fa-check-square checked"></i>1980s</li>
+        <li id="1990"><i class="fas fa-check-square checked"></i>1990s</li>
+        <li id="2000"><i class="fas fa-check-square checked"></i>2000s</li>
+        <li id="2010"><i class="fas fa-check-square checked"></i>2010s</li>
+    </ul>
+</div>
+<div id="instructions-one-box">
+    The color and height of the spikes are scaled to show how much average temperature (°F) has changed from the
+    1951-1980 average. Blues and Purples (25°F - 32°F), shows temperatures cooler than the average. Reds, Yellows and
+    Oranges (32°F - 40°F) show
+    temperatures warmer than the average.
+</div>
+<div id="play-button">
+    <i class="far fa-play-circle"></i>
+</div>
+<script src="./dist/bundle.js"></script>
+</body>
+<footer>
+    <div id="explanation">
+        <span>Sele Okojie </span>
+        <span class="bullet">•</span>
+        <span> COSC 471 Final Project</span>
+        <span class="bullet">•</span>
+        <span>Data from
+            <a href="https://data.giss.nasa.gov/gistemp/" target="_blank">NASA-GISTEMP-v4</a>
+        </span>
+    </div>
+</footer>
+</html>
