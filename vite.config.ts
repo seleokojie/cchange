@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import legacy from '@vitejs/plugin-legacy';
 import { visualizer } from 'rollup-plugin-visualizer';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   // Entry point - use current directory as root
@@ -66,6 +67,47 @@ export default defineConfig({
       targets: ['defaults', 'not IE 11'],
       // Reduce polyfill size
       additionalLegacyPolyfills: ['regenerator-runtime/runtime'],
+    }),
+    // Progressive Web App
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['images/*.{png,jpg,jpeg,svg}', '*.json'],
+      manifest: {
+        name: 'cChange - Climate Visualization',
+        short_name: 'cChange',
+        description:
+          'Interactive 3D visualization of global temperature changes',
+        theme_color: '#1a447e',
+        background_color: '#000000',
+        display: 'standalone',
+        icons: [
+          {
+            src: '/images/cChange_Logo.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any',
+          },
+        ],
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,jpg,jpeg,svg,json}'],
+        maximumFileSizeToCacheInBytes: 5000000, // 5MB for large textures
+        skipWaiting: true, // Force update
+        clientsClaim: true, // Take control immediately
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/data\.giss\.nasa\.gov\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'nasa-data-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 7, // 1 week
+              },
+            },
+          },
+        ],
+      },
     }),
     // Bundle analyzer (only in build mode)
     visualizer({

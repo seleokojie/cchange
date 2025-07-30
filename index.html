@@ -2,37 +2,48 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <meta name="theme-color" content="#1a447e" />
+    <meta
+      name="description"
+      content="Interactive 3D visualization of global temperature changes from 1910-2010 using NASA GISS data"
+    />
+
+    <!-- iOS PWA support -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="cChange" />
+    <link rel="apple-touch-icon" href="/images/cChange_Logo.png" />
+
+    <!-- Social media meta tags -->
+    <meta property="og:title" content="cChange - Climate Visualization" />
+    <meta
+      property="og:description"
+      content="Interactive 3D visualization of global temperature changes"
+    />
     <meta
       property="og:image"
       content="./images/featured-image.png"
       data-addsearch="no_crop"
     />
+    <meta property="og:type" content="website" />
 
     <!-- Preload critical assets for better performance -->
-    <link
-      rel="preload"
-      href="/images/BM.jpeg"
-      as="image"
-      crossorigin="anonymous"
-    />
-    <link
-      rel="preload"
-      href="/images/earthbump4k.jpg"
-      as="image"
-      crossorigin="anonymous"
-    />
-    <link
-      rel="preload"
-      href="/images/earthspec4k.jpg"
-      as="image"
-      crossorigin="anonymous"
-    />
+    <link rel="preload" href="/images/BM.jpeg" as="image" crossorigin />
+    <link rel="preload" href="/images/earthbump4k.jpg" as="image" crossorigin />
+    <link rel="preload" href="/images/earthspec4k.jpg" as="image" crossorigin />
     <link
       rel="preload"
       href="/images/earthhiresclouds4K.jpg"
       as="image"
-      crossorigin="anonymous"
+      crossorigin
     />
 
     <!-- DNS prefetch for external resources -->
