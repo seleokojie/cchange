@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack --mode=production",
-    "build:dev": "webpack --mode=development", 
+    "type-check": "tsc --noEmit",
+    "build": "npm run type-check && webpack --mode=production",
+    "build:dev": "npm run type-check && webpack --mode=development", 
     "dev": "webpack --watch --mode=development",
     "start": "npm run build && npx http-server -c-1 -p 8080",
     "serve": "npx http-server -c-1 -p 8080",

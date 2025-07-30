@@ -1,13 +1,18 @@
 module.exports = {
-    entry: "./cChange.js",
+    entry: "./cChange.ts",
     output: {
         filename: "./bundle.js"
     },
     resolve: {
-        extensions: ['.js', '.jsx', '*']
+        extensions: ['.ts', '.js', '.tsx', '.jsx']
     },
     module: {
         rules: [
+            {
+                test: /\.tsx?$/,
+                use: 'ts-loader',
+                exclude: /node_modules/,
+            },
             {
                 test: /\.jsx?$/,
                 exclude: /(node_modules)/,
