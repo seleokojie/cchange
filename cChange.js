@@ -1,51 +1,72 @@
 import * as THREE from 'three';
-import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import * as d3 from 'd3';
+import { gsap } from 'gsap';
 
+// Application state
 let year;
 let markers;
-document.addEventListener('DOMContentLoaded', ()=>{
-    const closeModal = document.getElementById("modal");
-    document.getElementById("close-modal").addEventListener("click",()=>{
-        closeModal.classList.add("animate-modal");
-        year = "1910";
-        markers = centuryData(year);
-        renderAnomalies();
-        document.querySelectorAll(".checked")[years.indexOf(year)].style.visibility = "visible";
-        setTimeout(()=>{
-            closeModal.style.display = "none";
-            closeModal.style.zIndex = "-1";
-        },1000)
-    })
+let data;
 
-    closeModal.addEventListener("animationend",()=>{
-        if(this.classList.contains("animate-modal")){
-            this.classList.remove("animate-modal");
+// Load climate data using modern fetch API
+async function loadData(url) {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-    })
-})
-
-
-function loadData(url) {
-    let data = [];
-    let xhr = new XMLHttpRequest();
-    xhr.open('GET', url, false);
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                let response = JSON.parse(xhr.responseText);
-                let output = Object.values(response);
-                for (let i = 0; i < output.length; i++) {
-                    data.push(output[i]);
-                }
-            }
-        }
-    };
-    xhr.send()
-    console.log(data)
-    return (data)
+        const jsonData = await response.json();
+        return Object.values(jsonData);
+    } catch (error) {
+        console.error('Error loading data:', error);
+        return [];
+    }
 }
 
-let data = loadData("data.json")
+// Initialize the application
+async function init() {
+    // Load climate data
+    data = await loadData("data/data.json");
+    console.log('Climate data loaded:', data.length, 'time periods');
+    
+    // Set initial year and render
+    year = "1910";
+    markers = centuryData(year);
+    renderAnomalies();
+    
+    // Show initial year checkbox
+    const checkedElements = document.querySelectorAll(".checked");
+    if (checkedElements[years.indexOf(year)]) {
+        checkedElements[years.indexOf(year)].style.visibility = "visible";
+    }
+}
+
+// DOM Content Loaded handler
+document.addEventListener('DOMContentLoaded', async () => {
+    // Initialize the application
+    await init();
+    
+    // Handle modal functionality if it exists
+    const closeModal = document.getElementById("modal");
+    const closeModalBtn = document.getElementById("close-modal");
+    
+    if (closeModal && closeModalBtn) {
+        closeModalBtn.addEventListener("click", () => {
+            closeModal.classList.add("animate-modal");
+            setTimeout(() => {
+                closeModal.style.display = "none";
+                closeModal.style.zIndex = "-1";
+            }, 1000);
+        });
+
+        closeModal.addEventListener("animationend", function() {
+            if (this.classList.contains("animate-modal")) {
+                this.classList.remove("animate-modal");
+            }
+        });
+    }
+});
+
 const years = ['1910', '1920', '1930', '1940', '1980', '1990', '2000', '2010'];
 
 function centuryData(year) {
@@ -211,46 +232,71 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-function onYearsClick(e){
+function onYearsClick(e) {
     e.preventDefault();
-    document.querySelectorAll(".checked").forEach(year=>{
-        year.style.visibility = "hidden";
+    
+    // Hide all year indicators
+    document.querySelectorAll(".checked").forEach(yearElement => {
+        yearElement.style.visibility = "hidden";
     });
 
-    e.target.children[0].style.visibility = "visible";
+    // Show selected year indicator
+    const targetIcon = e.target.querySelector('i') || e.target;
+    if (targetIcon) {
+        targetIcon.style.visibility = "visible";
+    }
+    
+    // Update visualization
     removeChildren();
-    year = e.target.id;
+    year = e.target.id || e.target.parentElement.id;
     markers = centuryData(year);
     renderAnomalies();
 }
 
-function onPlayClick(e){
+function onPlayClick(e) {
     e.preventDefault();
     removeChildren();
-    years.forEach(year=>{
-        if (year==="1910"){
-            visibleAndRender()
+    
+    let currentIndex = 0;
+    
+    // Create timeline animation using GSAP
+    const timeline = gsap.timeline({
+        repeat: 0,
+        onUpdate: function() {
+            const progress = this.progress();
+            const targetIndex = Math.floor(progress * years.length);
+            
+            if (targetIndex !== currentIndex && targetIndex < years.length) {
+                currentIndex = targetIndex;
+                year = years[currentIndex];
+                
+                // Hide all indicators
+                document.querySelectorAll(".checked").forEach(yearElement => {
+                    yearElement.style.visibility = "hidden";
+                });
+                
+                // Show current year indicator
+                const checkedElements = document.querySelectorAll(".checked");
+                if (checkedElements[currentIndex]) {
+                    checkedElements[currentIndex].style.visibility = "visible";
+                }
+                
+                // Update visualization
+                removeChildren();
+                markers = centuryData(year);
+                renderAnomalies();
+            }
         }
-
-        setTimeout(()=>{
-            visibleAndRender()
-        },1000)
-    })
+    });
+    
+    // Animate through all years over 8 seconds
+    timeline.to({}, { duration: 8, ease: "power2.inOut" });
 }
 
 function animate() {
     requestAnimationFrame(animate);
     render();
     controls.update();
-}
-
-function visibleAndRender(){
-    document.querySelectorAll(".checked").forEach(year => {
-        year.style.visibility = "hidden";
-    });
-    document.querySelectorAll(".checked")[years.indexOf(year)].style.visibility = "visible";
-    markers = centuryData(year);
-    renderAnomalies();
 }
 
 function render() {
@@ -261,45 +307,54 @@ function render() {
 // Removes the points of interest freeing up memory and space to have better performance
 function removeChildren() {
     let destroy = earthClouds.children.length - 1;
+    
     while (destroy >= 0) {
-        earthClouds.remove(earthClouds.children[destroy].material)
-        earthClouds.remove(earthClouds.children[destroy].geometry)
-        // destroy on its own only removes the mesh
-        earthClouds.remove(earthClouds.children[destroy])
-        destroy -= 1
+        const child = earthClouds.children[destroy];
+        
+        // Properly dispose of materials and geometries to prevent memory leaks
+        if (child.material) {
+            child.material.dispose();
+        }
+        if (child.geometry) {
+            child.geometry.dispose();
+        }
+        
+        earthClouds.remove(child);
+        destroy -= 1;
     }
 }
 
-// hue calculation code borrowed from https://github.com/dataarts/webgl-globe
+// Improved color calculation with better HSL handling
 function colorVal(x) {
-    let c = new THREE.Color();
+    const color = new THREE.Color();
+    
     if (x > 0.0) {
-        c.setHSL((.2139 - (x / 1.619) * .5), 1.0, 0.5)
-        return c;
-    }
-    else if (x < 0.0) {
-        c.setHSL((0.5111 - (x / 1.619)), 1.0, 0.6)
-        return c;
-    }
-    else if (x === 0) {
-        c.setRGB(1.0, 1.0, 1.0)
-        return c;
+        // Warmer colors for positive temperature anomalies
+        color.setHSL((0.2139 - (x / 1.619) * 0.5), 1.0, 0.5);
+        return color;
+    } else if (x < 0.0) {
+        // Cooler colors for negative temperature anomalies
+        color.setHSL((0.5111 - (x / 1.619)), 1.0, 0.6);
+        return color;
+    } else {
+        // Neutral color for zero anomaly
+        color.setRGB(1.0, 1.0, 1.0);
+        return color;
     }
 }
 
-//Maps coordinates to a 3D Plane
-function addCoord(latitude, longitude, delta){
-    let pointOfInterest = new THREE.BoxGeometry(.05, .1, .05)
-    let lat = latitude * (Math.PI / 180);
-    let lon = -longitude * (Math.PI / 180);
+// Maps coordinates to a 3D Plane with improved performance
+function addCoord(latitude, longitude, delta) {
+    const pointOfInterest = new THREE.BoxGeometry(0.05, 0.1, 0.05);
+    const lat = latitude * (Math.PI / 180);
+    const lon = -longitude * (Math.PI / 180);
     const radius = 10;
 
-    let color = colorVal(delta);
+    const color = colorVal(delta);
+    const material = new THREE.MeshLambertMaterial({ color: color });
+    const mesh = new THREE.Mesh(pointOfInterest, material);
 
-    let material = new THREE.MeshLambertMaterial({ color: color});
-
-    let mesh = new THREE.Mesh(pointOfInterest,material);
-
+    // Calculate position on sphere
     mesh.position.set(
         Math.cos(lat) * Math.cos(lon) * radius,
         Math.sin(lat) * radius,
@@ -307,17 +362,21 @@ function addCoord(latitude, longitude, delta){
     );
 
     mesh.rotation.set(0.0, -lon, lat - Math.PI * 0.5);
+    
+    // Scale based on temperature anomaly, with minimum scale to avoid matrix issues
+    mesh.scale.y = Math.max(Math.abs(delta) * 150, 0.1);
 
-    mesh.scale.y = Math.max(Math.abs(delta)*150, 0.1); // avoid non-invertible matrix
-
-    earthClouds.add(mesh)
+    earthClouds.add(mesh);
 }
 
 function renderAnomalies() {
-    for(let i=0; i<markers.length;i++){
-        if (markers[i].delta !== 0) {
-            addCoord(markers[i].lat, markers[i].lon, markers[i].delta)
-        }
-    }
+    // Use filter and forEach for better performance and readability
+    markers
+        .filter(marker => marker.delta !== 0)
+        .forEach(marker => {
+            addCoord(marker.lat, marker.lon, marker.delta);
+        });
 }
+
+// Start the animation loop
 animate();
