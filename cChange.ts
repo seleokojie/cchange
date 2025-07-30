@@ -41,7 +41,7 @@ async function loadData(url: string): Promise<YearData[]> {
  */
 async function init(): Promise<void> {
     // Load climate data
-    data = await loadData("data/data.json");
+    data = await loadData("/data/data.json");
     console.log('Climate data loaded:', data.length, 'time periods');
     
     // Set initial year and render
@@ -131,9 +131,9 @@ document.body.appendChild(renderer.domElement);
 const controls: OrbitControls = new OrbitControls(camera, renderer.domElement);
 
 // Earth textures with proper typing
-const earthMap: THREE.Texture = new THREE.TextureLoader().load('./assets/images/BM.jpeg');
-const earthBumpMap: THREE.Texture = new THREE.TextureLoader().load('./assets/images/earthbump4k.jpg');
-const earthSpecMap: THREE.Texture = new THREE.TextureLoader().load('./assets/images/earthspec4k.jpg');
+const earthMap: THREE.Texture = new THREE.TextureLoader().load('/images/BM.jpeg');
+const earthBumpMap: THREE.Texture = new THREE.TextureLoader().load('/images/earthbump4k.jpg');
+const earthSpecMap: THREE.Texture = new THREE.TextureLoader().load('/images/earthspec4k.jpg');
 
 const earthGeometry: THREE.SphereGeometry = new THREE.SphereGeometry(10, 32, 32);
 
@@ -150,7 +150,7 @@ scene.add(earth);
 
 // Cloud layer setup
 const earthCloudGeo: THREE.SphereGeometry = new THREE.SphereGeometry(10, 32, 32);
-const earthCloudsTexture: THREE.Texture = new THREE.TextureLoader().load('./assets/images/earthhiresclouds4K.jpg');
+const earthCloudsTexture: THREE.Texture = new THREE.TextureLoader().load('/images/earthhiresclouds4K.jpg');
 
 const earthMaterialClouds: THREE.MeshLambertMaterial = new THREE.MeshLambertMaterial({
     color: 0x1f2340,
@@ -212,12 +212,12 @@ earth.add(halo);
 function createSkyBox(scene: THREE.Scene): void {
     const loader: THREE.CubeTextureLoader = new THREE.CubeTextureLoader();
     scene.background = loader.load([
-        './assets/images/space_right.png',
-        './assets/images/space_left.png',
-        './assets/images/space_top.png',
-        './assets/images/space_bot.png',
-        './assets/images/space_front.png',
-        './assets/images/space_back.png'
+        '/images/space_right.png',
+        '/images/space_left.png',
+        '/images/space_top.png',
+        '/images/space_bot.png',
+        '/images/space_front.png',
+        '/images/space_back.png'
     ]);
 }
 
