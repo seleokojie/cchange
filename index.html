@@ -89,6 +89,8 @@
 
       .loading-content {
         text-align: center;
+        max-width: 400px;
+        padding: 20px;
       }
 
       .spinner {
@@ -99,6 +101,32 @@
         height: 40px;
         animation: spin 1s linear infinite;
         margin: 0 auto 20px;
+      }
+
+      .loading-progress {
+        margin-top: 20px;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 10px;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4a90e2, #63b0ff);
+        width: 0%;
+        transition: width 0.3s ease;
+        border-radius: 4px;
+      }
+
+      .progress-text {
+        font-size: 14px;
+        opacity: 0.8;
       }
 
       @keyframes spin {
@@ -117,37 +145,123 @@
     </style>
   </head>
   <body>
+    <!-- Skip links for keyboard navigation -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <a href="#years-list" class="skip-link">Skip to decade selection</a>
+
     <!-- Loading overlay for better UX -->
-    <div id="loading-overlay">
+    <div
+      id="loading-overlay"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading climate visualization"
+    >
       <div class="loading-content">
-        <div class="spinner"></div>
-        <h2>Loading Climate Visualization...</h2>
-        <p>Preparing 3D globe and climate data</p>
+        <div class="spinner" aria-hidden="true"></div>
+        <h2 id="loading-title">Loading Climate Visualization...</h2>
+        <p id="loading-message">Preparing 3D globe and climate data</p>
+        <div class="loading-progress" aria-hidden="true">
+          <div class="progress-bar">
+            <div id="progress-fill" class="progress-fill"></div>
+          </div>
+          <span id="progress-text" class="progress-text">0%</span>
+        </div>
       </div>
     </div>
 
-    <h1 id="page-header">Surface Temperature Over a Century</h1>
-    <div id="years-box">
-      <ul id="years-list">
-        <li id="1910"><i class="fas fa-check-square checked"></i>1910s</li>
-        <li id="1920"><i class="fas fa-check-square checked"></i>1920s</li>
-        <li id="1930"><i class="fas fa-check-square checked"></i>1930s</li>
-        <li id="1940"><i class="fas fa-check-square checked"></i>1940s</li>
-        <li id="1980"><i class="fas fa-check-square checked"></i>1980s</li>
-        <li id="1990"><i class="fas fa-check-square checked"></i>1990s</li>
-        <li id="2000"><i class="fas fa-check-square checked"></i>2000s</li>
-        <li id="2010"><i class="fas fa-check-square checked"></i>2010s</li>
-      </ul>
-    </div>
-    <div id="instructions-one-box">
-      The color and height of the spikes are scaled to show how much average
-      temperature (°F) has changed from the 1951-1980 average. Blues and Purples
-      (25°F - 32°F), shows temperatures cooler than the average. Reds, Yellows
-      and Oranges (32°F - 40°F) show temperatures warmer than the average.
-    </div>
-    <div id="play-button">
-      <i class="far fa-play-circle"></i>
-    </div>
+    <!-- Main application content -->
+    <main
+      id="main-content"
+      role="main"
+      aria-label="Climate visualization application"
+    >
+      <!-- 3D Visualization Canvas -->
+      <canvas
+        id="visualization-canvas"
+        aria-label="Interactive 3D globe showing temperature anomalies by decade. Use the decade selection controls to change the displayed data."
+        role="img"
+      >
+        <p>
+          This visualization requires a modern web browser with WebGL support.
+          Please update your browser to view the interactive 3D climate data.
+        </p>
+      </canvas>
+
+      <header>
+        <h1 id="page-header">Surface Temperature Over a Century</h1>
+      </header>
+
+      <!-- Year selection navigation -->
+      <nav id="years-box" aria-label="Select decade to visualize">
+        <ul
+          id="years-list"
+          role="listbox"
+          aria-label="Available decades for climate data visualization"
+        >
+          <li id="1910" role="option" tabindex="0" aria-selected="true">
+            <i class="fas fa-check-square checked" aria-hidden="true"></i>
+            <span>1910s</span>
+          </li>
+          <li id="1920" role="option" tabindex="-1" aria-selected="false">
+            <i class="fas fa-check-square checked" aria-hidden="true"></i>
+            <span>1920s</span>
+          </li>
+          <li id="1930" role="option" tabindex="-1" aria-selected="false">
+            <i class="fas fa-check-square checked" aria-hidden="true"></i>
+            <span>1930s</span>
+          </li>
+          <li id="1940" role="option" tabindex="-1" aria-selected="false">
+            <i class="fas fa-check-square checked" aria-hidden="true"></i>
+            <span>1940s</span>
+          </li>
+          <li id="1980" role="option" tabindex="-1" aria-selected="false">
+            <i class="fas fa-check-square checked" aria-hidden="true"></i>
+            <span>1980s</span>
+          </li>
+          <li id="1990" role="option" tabindex="-1" aria-selected="false">
+            <i class="fas fa-check-square checked" aria-hidden="true"></i>
+            <span>1990s</span>
+          </li>
+          <li id="2000" role="option" tabindex="-1" aria-selected="false">
+            <i class="fas fa-check-square checked" aria-hidden="true"></i>
+            <span>2000s</span>
+          </li>
+          <li id="2010" role="option" tabindex="-1" aria-selected="false">
+            <i class="fas fa-check-square checked" aria-hidden="true"></i>
+            <span>2010s</span>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Instructions and controls -->
+      <section id="instructions-one-box" aria-label="Visualization explanation">
+        <p>
+          The color and height of the spikes are scaled to show how much average
+          temperature (°F) has changed from the 1951-1980 average. Blues and
+          Purples (25°F - 32°F), shows temperatures cooler than the average.
+          Reds, Yellows and Oranges (32°F - 40°F) show temperatures warmer than
+          the average.
+        </p>
+      </section>
+
+      <!-- Animation controls -->
+      <button
+        id="play-button"
+        aria-label="Play animation through all decades"
+        title="Click to animate through all decades automatically"
+      >
+        <i class="far fa-play-circle" aria-hidden="true"></i>
+        <span class="sr-only">Play animation</span>
+      </button>
+
+      <!-- Screen reader live region for announcements -->
+      <div
+        id="sr-announcements"
+        class="sr-only"
+        aria-live="polite"
+        aria-atomic="true"
+      ></div>
+    </main>
 
     <!-- Load main script with module for better performance -->
     <script type="module" src="./cChange.ts"></script>
