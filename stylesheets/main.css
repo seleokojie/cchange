@@ -39,6 +39,68 @@ body {
   touch-action: manipulation; /* Improves touch responsiveness */
 }
 
+/* Accessibility utilities */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Skip links for keyboard navigation */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--primary-color);
+  color: var(--text-color);
+  padding: 8px;
+  text-decoration: none;
+  border-radius: var(--border-radius);
+  z-index: 1000;
+  transition: top 0.3s;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Enhanced focus indicators */
+button:focus,
+[role='option']:focus,
+a:focus {
+  outline: 3px solid var(--accent-color);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --primary-color: #000000;
+    --background-color: #ffffff;
+    --text-color: #000000;
+    --accent-color: #0000ff;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Canvas and WebGL container responsiveness */
 canvas {
   display: block;
@@ -261,28 +323,55 @@ canvas {
 #play-button {
   top: 21vh;
   left: 4vw;
+  background: transparent;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: var(--transition);
+}
+
+#play-button:hover,
+#play-button:focus {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
 }
 
 #play-button svg {
   font-size: x-large;
+  pointer-events: none;
 }
 
-#play-button:hover {
-  cursor: pointer;
+/* Years list accessibility enhancements */
+#years-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 #years-list li {
-  padding-top: 50%;
+  padding: 8px 12px;
   list-style: none;
   font-family: Verdana, Geneva, Tahoma, sans-serif;
   font-size: 11px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: var(--transition);
+  user-select: none;
 }
 
-#years-list li:hover {
-  cursor: pointer;
+#years-list li:hover,
+#years-list li:focus {
   font-size: 13px;
   color: #aaaaaa;
-  /* text-decoration: underline; */
+  background: rgba(255, 255, 255, 0.1);
+  outline: none;
+}
+
+#years-list li[aria-selected='true'] {
+  background: rgba(74, 144, 226, 0.3);
+  border-left: 4px solid var(--accent-color);
 }
 
 /* .selected-year {
