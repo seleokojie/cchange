@@ -1,18 +1,27 @@
 {
   "name": "cchange",
   "version": "1.0.0",
+  "type": "module",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "type-check": "npx tsc --noEmit",
     "dev": "npx vite",
-    "build": "npx vite build",
+    "build": "npm run type-check && npx vite build",
     "build:analyze": "npx vite build --mode production && npx vite-bundle-analyzer dist/stats.html",
     "preview": "npx vite preview",
     "start": "npm run build && npm run preview",
     "serve": "npx vite --port 8080",
-    "clean": "rm -rf dist/"
+    "clean": "rm -rf dist/",
+    "lint": "eslint . --ext .ts,.js,.tsx,.jsx --fix",
+    "lint:check": "eslint . --ext .ts,.js,.tsx,.jsx",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky"
   },
   "author": "",
   "license": "ISC",
@@ -29,6 +38,28 @@
     "rollup-plugin-visualizer": "^6.0.3",
     "typescript": "^5.5.4",
     "vite": "^5.3.5",
-    "vite-bundle-analyzer": "^1.1.0"
+    "vite-bundle-analyzer": "^1.1.0",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/user-event": "^14.5.2",
+    "@typescript-eslint/eslint-plugin": "^8.5.0",
+    "@typescript-eslint/parser": "^8.5.0",
+    "eslint": "^9.10.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "husky": "^9.1.5",
+    "jsdom": "^25.0.0",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3",
+    "vitest": "^2.0.5",
+    "@vitest/ui": "^2.0.5"
+  },
+  "lint-staged": {
+    "*.{ts,js,tsx,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,css,html}": [
+      "prettier --write"
+    ]
   }
 }
