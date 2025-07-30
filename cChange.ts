@@ -1,7 +1,5 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import * as d3 from 'd3';
-import { gsap } from 'gsap';
 import { 
     ClimateDataPoint, 
     YearData, 
@@ -11,13 +9,38 @@ import {
     MaterialConfig
 } from './types';
 
+// Lazy load animation libraries for better initial loading
+let d3Module: typeof import('d3') | null = null;
+let gsapModule: typeof import('gsap').gsap | null = null;
+
 // Application state with proper typing
 let year: string;
 let markers: ClimateDataPoint[];
 let data: YearData[];
 
 /**
- * Loads climate data from a given URL.
+ * Dynamically loads D3 library when needed for better performance
+ */
+async function loadD3(): Promise<typeof import('d3')> {
+    if (!d3Module) {
+        d3Module = await import('d3');
+    }
+    return d3Module;
+}
+
+/**
+ * Dynamically loads GSAP library when needed for better performance
+ */
+async function loadGSAP(): Promise<typeof import('gsap').gsap> {
+    if (!gsapModule) {
+        const gsapImport = await import('gsap');
+        gsapModule = gsapImport.gsap;
+    }
+    return gsapModule;
+}
+
+/**
+ * Loads climate data from a given URL with caching.
  * @param url The URL to fetch the climate data from.
  * @returns A promise that resolves to an array of YearData.
  */
@@ -28,7 +51,16 @@ async function loadData(url: string): Promise<YearData[]> {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const jsonData: unknown = await response.json();
-        return Object.values(jsonData as Record<string, YearData>);
+        
+        // Handle both array and object formats
+        let result: YearData[];
+        if (Array.isArray(jsonData)) {
+            result = jsonData as YearData[];
+        } else {
+            result = Object.values(jsonData as Record<string, YearData>);
+        }
+        
+        return result;
     } catch (error) {
         console.error('Error loading data:', error);
         return [];
@@ -41,7 +73,7 @@ async function loadData(url: string): Promise<YearData[]> {
  */
 async function init(): Promise<void> {
     // Load climate data
-    data = await loadData("/data/data.json");
+    data = await loadData("/data.json");
     console.log('Climate data loaded:', data.length, 'time periods');
     
     // Set initial year and render
@@ -59,28 +91,53 @@ async function init(): Promise<void> {
 
 // DOM Content Loaded handler with proper typing
 document.addEventListener('DOMContentLoaded', async (): Promise<void> => {
-    // Initialize the application
-    await init();
-    
-    // Handle modal functionality if it exists
-    const closeModal: HTMLElement | null = document.getElementById("modal");
-    const closeModalBtn: HTMLElement | null = document.getElementById("close-modal");
-    
-    if (closeModal && closeModalBtn) {
-        closeModalBtn.addEventListener("click", (): void => {
-            closeModal.classList.add("animate-modal");
-            setTimeout((): void => {
-                closeModal.style.display = "none";
-                closeModal.style.zIndex = "-1";
-            }, 1000);
-        });
-
+    try {
+        // Initialize the application
+        await init();
         
-        closeModal.addEventListener("animationend", function(this: HTMLElement): void {
-            if (this.classList.contains("animate-modal")) {
-                this.classList.remove("animate-modal");
-            }
-        });
+        // Hide loading overlay after initialization
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) {
+            loadingOverlay.classList.add('hidden');
+            setTimeout(() => {
+                loadingOverlay.remove();
+            }, 500);
+        }
+        
+        // Handle modal functionality if it exists
+        const closeModal: HTMLElement | null = document.getElementById("modal");
+        const closeModalBtn: HTMLElement | null = document.getElementById("close-modal");
+        
+        if (closeModal && closeModalBtn) {
+            closeModalBtn.addEventListener("click", (): void => {
+                closeModal.classList.add("animate-modal");
+                setTimeout((): void => {
+                    closeModal.style.display = "none";
+                    closeModal.style.zIndex = "-1";
+                }, 1000);
+            });
+
+            
+            closeModal.addEventListener("animationend", function(this: HTMLElement): void {
+                if (this.classList.contains("animate-modal")) {
+                    this.classList.remove("animate-modal");
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Failed to initialize application:', error);
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) {
+            loadingOverlay.innerHTML = `
+                <div class="loading-content">
+                    <h2 style="color: #ff6b6b;">------ Loading Failed ------</h2>
+                    <p>There was an error loading the climate visualization.</p>
+                    <button onclick="location.reload()" style="padding: 10px 20px; margin-top: 20px; background: white; color: #1a447e; border: none; border-radius: 5px; cursor: pointer;">
+                        Retry
+                    </button>
+                </div>
+            `;
+        }
     }
 });
 
@@ -95,26 +152,47 @@ function centuryData(year: string): ClimateDataPoint[] {
     const output: ClimateDataPoint[] = [];
     const yearIdx: number = years.indexOf(year);
     
-    if (yearIdx === -1 || !data[yearIdx] || !data[yearIdx][1]) {
-        console.warn(`No data found for year: ${year}`);
+    if (yearIdx === -1) {
+        console.warn(`Year ${year} not found in years array:`, years);
+        return output;
+    }
+    
+    if (!data[yearIdx]) {
+        console.warn(`No data found at index ${yearIdx} for year: ${year}`);
+        return output;
+    }
+    
+    if (!data[yearIdx][1]) {
+        console.warn(`No coordinate data found for year: ${year}`, data[yearIdx]);
         return output;
     }
     
     const yearData: number[] = data[yearIdx][1];
+    console.log(`Processing ${yearData.length / 3} data points for year ${year}`);
     
     for (let i = 0; i < yearData.length; i += 3) {
+        const lat = yearData[i];
+        const lon = yearData[i + 1];
+        const delta = yearData[i + 2];
+        
+        // Skip invalid data points
+        if (lat === undefined || lon === undefined || delta === undefined) {
+            continue;
+        }
+        
         const dataObject: ClimateDataPoint = {
-            lat: yearData[i],
-            lon: yearData[i + 1],
-            delta: yearData[i + 2]
+            lat: lat,
+            lon: lon,
+            delta: delta
         };
         output.push(dataObject);
     }
     
+    console.log(`Created ${output.length} data points, non-zero: ${output.filter(p => p.delta !== 0).length}`);
     return output;
 }
 
-// Three.js scene setup with proper typing
+// Three.js scene setup with proper typing and optimizations
 const scene: THREE.Scene = new THREE.Scene();
 
 const camera: THREE.PerspectiveCamera = new THREE.PerspectiveCamera(
@@ -124,18 +202,39 @@ const camera: THREE.PerspectiveCamera = new THREE.PerspectiveCamera(
     1000
 );
 
-const renderer: THREE.WebGLRenderer = new THREE.WebGLRenderer();
+// Optimized renderer settings for performance
+const renderer: THREE.WebGLRenderer = new THREE.WebGLRenderer({
+    antialias: window.devicePixelRatio <= 1, // Only use antialias on lower DPI displays
+    powerPreference: "high-performance",
+    stencil: false, // Disable stencil buffer if not needed
+    depth: true
+});
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance
+renderer.shadowMap.enabled = false; // Disable shadows for better performance
 document.body.appendChild(renderer.domElement);
 
 const controls: OrbitControls = new OrbitControls(camera, renderer.domElement);
 
-// Earth textures with proper typing
-const earthMap: THREE.Texture = new THREE.TextureLoader().load('/images/BM.jpeg');
-const earthBumpMap: THREE.Texture = new THREE.TextureLoader().load('/images/earthbump4k.jpg');
-const earthSpecMap: THREE.Texture = new THREE.TextureLoader().load('/images/earthspec4k.jpg');
+// Optimized texture loading with better compression and caching
+const textureLoader = new THREE.TextureLoader();
+textureLoader.setCrossOrigin('anonymous'); // Fix CORS issues
 
-const earthGeometry: THREE.SphereGeometry = new THREE.SphereGeometry(10, 32, 32);
+// Load textures with optimization
+const earthMap: THREE.Texture = textureLoader.load('/images/BM.jpeg');
+const earthBumpMap: THREE.Texture = textureLoader.load('/images/earthbump4k.jpg');
+const earthSpecMap: THREE.Texture = textureLoader.load('/images/earthspec4k.jpg');
+
+// Optimize texture settings for performance
+[earthMap, earthBumpMap, earthSpecMap].forEach(texture => {
+    texture.generateMipmaps = true;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    // Removed texture.format = THREE.RGBFormat to fix WebGL errors
+});
+
+// Reduced geometry complexity for better performance
+const earthGeometry: THREE.SphereGeometry = new THREE.SphereGeometry(10, 64, 32);
 
 const earthMaterial: THREE.MeshPhongMaterial = new THREE.MeshPhongMaterial({
     map: earthMap,
@@ -149,21 +248,26 @@ const earth: THREE.Mesh = new THREE.Mesh(earthGeometry, earthMaterial);
 scene.add(earth);
 
 // Cloud layer setup
-const earthCloudGeo: THREE.SphereGeometry = new THREE.SphereGeometry(10, 32, 32);
-const earthCloudsTexture: THREE.Texture = new THREE.TextureLoader().load('/images/earthhiresclouds4K.jpg');
+const earthCloudGeo: THREE.SphereGeometry = new THREE.SphereGeometry(10, 64, 32);
+const earthCloudsTexture: THREE.Texture = textureLoader.load('/images/earthhiresclouds4K.jpg');
+
+// Cloud texture
+earthCloudsTexture.generateMipmaps = true;
+earthCloudsTexture.minFilter = THREE.LinearMipmapLinearFilter;
+earthCloudsTexture.magFilter = THREE.LinearFilter;
 
 const earthMaterialClouds: THREE.MeshLambertMaterial = new THREE.MeshLambertMaterial({
     color: 0x1f2340,
     map: earthCloudsTexture,
     transparent: true,
-    opacity: 0.2
+    opacity: 0.15
 });
 
 const earthClouds: THREE.Mesh = new THREE.Mesh(earthCloudGeo, earthMaterialClouds);
 earthClouds.scale.set(1.015, 1.015, 1.015);
 earth.add(earthClouds);
 
-// Shader setup for halo effect with proper typing
+// Shader setup for halo effect
 interface HaloShader {
     uniforms: { [uniform: string]: THREE.IUniform };
     vertexShader: string;
@@ -190,9 +294,9 @@ const shader: HaloShader = {
 };
 
 const uniforms: { [uniform: string]: THREE.IUniform } = THREE.UniformsUtils.clone(shader.uniforms);
-const geometry: THREE.SphereGeometry = new THREE.SphereGeometry(10, 32, 32);
+const haloGeometry: THREE.SphereGeometry = new THREE.SphereGeometry(10, 64, 32);
 
-const material: THREE.ShaderMaterial = new THREE.ShaderMaterial({
+const haloMaterial: THREE.ShaderMaterial = new THREE.ShaderMaterial({
     uniforms: uniforms,
     vertexShader: shader.vertexShader,
     fragmentShader: shader.fragmentShader,
@@ -201,7 +305,7 @@ const material: THREE.ShaderMaterial = new THREE.ShaderMaterial({
     transparent: true
 });
 
-const halo: THREE.Mesh = new THREE.Mesh(geometry, material);
+const halo: THREE.Mesh = new THREE.Mesh(haloGeometry, haloMaterial);
 halo.scale.set(1.35, 1.35, 1.35);
 earth.add(halo);
 
@@ -211,7 +315,7 @@ earth.add(halo);
  */
 function createSkyBox(scene: THREE.Scene): void {
     const loader: THREE.CubeTextureLoader = new THREE.CubeTextureLoader();
-    scene.background = loader.load([
+    const skyboxTexture = loader.load([
         '/images/space_right.png',
         '/images/space_left.png',
         '/images/space_top.png',
@@ -219,15 +323,22 @@ function createSkyBox(scene: THREE.Scene): void {
         '/images/space_front.png',
         '/images/space_back.png'
     ]);
+
+    // Skybox texture
+    skyboxTexture.generateMipmaps = false;
+    skyboxTexture.minFilter = THREE.LinearFilter;
+    skyboxTexture.magFilter = THREE.LinearFilter;
+    
+    scene.background = skyboxTexture;
 }
 
-const lights: THREE.Light[] = [];
-
 /**
- * Creates and adds lights to the scene.
+ * Creates and adds lights to the scen.
  * @param scene The scene to which the lights will be added.
  */
 function createLights(scene: THREE.Scene): void {
+    const lights: THREE.Light[] = [];
+
     lights[0] = new THREE.PointLight("#1a447e", 0.7, 0);
     lights[1] = new THREE.PointLight("#1a447e", 0.7, 0);
     lights[2] = new THREE.PointLight("#1a447e", 0.9, 0);
@@ -253,10 +364,12 @@ addSceneObjects(scene);
 
 camera.position.z = 20;
 
-// Disable control function, so users do not zoom too far in or pan too far away from center
-controls.minDistance = 12;
+// Optimized control settings for better performance
+controls.minDistance = 8;
 controls.maxDistance = 20;
 controls.enablePan = false;
+controls.enableDamping = true; // Add damping for smoother controls
+controls.dampingFactor = 0.05;
 controls.update();
 controls.saveState();
 
@@ -314,9 +427,12 @@ function onYearsClick(e: Event): void {
  * Handles the play button click event to animate through the years.
  * @param e The click event.
  */
-function onPlayClick(e: Event): void {
+async function onPlayClick(e: Event): Promise<void> {
     e.preventDefault();
     removeChildren();
+    
+    // Load GSAP dynamically when needed
+    const gsap = await loadGSAP();
     
     let currentIndex: number = 0;
     
@@ -370,8 +486,60 @@ function render(): void {
     renderer.render(scene, camera);
 }
 
+// Object pooling for better performance
+const geometryPool: THREE.BoxGeometry[] = [];
+const materialPool: THREE.MeshLambertMaterial[] = [];
+const MAX_POOL_SIZE = 100;
+
+/**
+ * Gets or creates a geometry from the pool for better performance
+ */
+function getGeometry(): THREE.BoxGeometry {
+    if (geometryPool.length > 0) {
+        return geometryPool.pop()!;
+    }
+    return new THREE.BoxGeometry(0.05, 0.1, 0.05);
+}
+
+/**
+ * Returns a geometry to the pool for reuse
+ */
+function returnGeometry(geometry: THREE.BoxGeometry): void {
+    if (geometryPool.length < MAX_POOL_SIZE) {
+        geometryPool.push(geometry);
+    } else {
+        geometry.dispose();
+    }
+}
+
+/**
+ * Gets or creates a material from the pool for better performance
+ */
+function getMaterial(color: THREE.Color): THREE.MeshLambertMaterial {
+    let material: THREE.MeshLambertMaterial;
+    if (materialPool.length > 0) {
+        material = materialPool.pop()!;
+        material.color.copy(color);
+    } else {
+        material = new THREE.MeshLambertMaterial({ color: color });
+    }
+    return material;
+}
+
+/**
+ * Returns a material to the pool for reuse
+ */
+function returnMaterial(material: THREE.MeshLambertMaterial): void {
+    if (materialPool.length < MAX_POOL_SIZE) {
+        materialPool.push(material);
+    } else {
+        material.dispose();
+    }
+}
+
 /**
  * Removes all children from the earthClouds mesh, disposing of their materials and geometries to prevent memory leaks.
+ * Optimized with object pooling.
  */
 function removeChildren(): void {
     let destroy: number = earthClouds.children.length - 1;
@@ -379,12 +547,12 @@ function removeChildren(): void {
     while (destroy >= 0) {
         const child: THREE.Object3D = earthClouds.children[destroy];
         
-        // Properly dispose of materials and geometries to prevent memory leaks
+        // Return materials and geometries to pools for reuse
         if ('material' in child && child.material) {
-            (child.material as THREE.Material).dispose();
+            returnMaterial(child.material as THREE.MeshLambertMaterial);
         }
         if ('geometry' in child && child.geometry) {
-            (child.geometry as THREE.BufferGeometry).dispose();
+            returnGeometry(child.geometry as THREE.BoxGeometry);
         }
         
         earthClouds.remove(child);
@@ -423,13 +591,13 @@ function colorVal(x: number): THREE.Color {
  * @param delta The temperature anomaly at the point.
  */
 function addCoord(latitude: number, longitude: number, delta: number): void {
-    const pointOfInterest: THREE.BoxGeometry = new THREE.BoxGeometry(0.05, 0.1, 0.05);
+    const pointOfInterest: THREE.BoxGeometry = getGeometry(); // Use pooled geometry
     const lat: number = latitude * (Math.PI / 180);
     const lon: number = -longitude * (Math.PI / 180);
     const radius: number = 10;
 
     const color: THREE.Color = colorVal(delta);
-    const material: THREE.MeshLambertMaterial = new THREE.MeshLambertMaterial({ color: color });
+    const material: THREE.MeshLambertMaterial = getMaterial(color); // Use pooled material
     const mesh: THREE.Mesh = new THREE.Mesh(pointOfInterest, material);
 
     // Calculate position on sphere
@@ -449,13 +617,27 @@ function addCoord(latitude: number, longitude: number, delta: number): void {
 
 /**
  * Renders anomalies by filtering markers and adding them to the scene.
+ * Optimized to reduce unnecessary calculations.
  */
 function renderAnomalies(): void {
-    markers
-        .filter((marker: ClimateDataPoint): boolean => marker.delta !== 0)
-        .forEach((marker: ClimateDataPoint): void => {
-            addCoord(marker.lat, marker.lon, marker.delta);
-        });
+    const nonZeroMarkers = markers.filter((marker: ClimateDataPoint): boolean => marker.delta !== 0);
+    
+    console.log(`Rendering ${nonZeroMarkers.length} anomalies out of ${markers.length} total markers`);
+    
+    // Log a few sample markers for debugging
+    if (nonZeroMarkers.length > 0) {
+        console.log('Sample markers:', nonZeroMarkers.slice(0, 5));
+    } else {
+        console.warn('No non-zero markers found!');
+        console.log('Sample of all markers:', markers.slice(0, 10));
+    }
+    
+    // Batch processing for better performance
+    nonZeroMarkers.forEach((marker: ClimateDataPoint): void => {
+        addCoord(marker.lat, marker.lon, marker.delta);
+    });
+    
+    console.log(`Added ${earthClouds.children.length} objects to the scene`);
 }
 
 // Start the animation loop
