@@ -1,5 +1,5 @@
 {
-  "name": "cChange",
+  "name": "cchange",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,6 +8,7 @@
     "type-check": "npx tsc --noEmit",
     "dev": "npx vite",
     "build": "npx vite build",
+    "build:analyze": "npx vite build --mode production && npx vite-bundle-analyzer dist/stats.html",
     "preview": "npx vite preview",
     "start": "npm run build && npm run preview",
     "serve": "npx vite --port 8080",
@@ -25,7 +26,9 @@
     "@types/node": "^22.1.0",
     "@types/three": "^0.166.0",
     "@vitejs/plugin-legacy": "^5.4.1",
+    "rollup-plugin-visualizer": "^6.0.3",
     "typescript": "^5.5.4",
-    "vite": "^5.3.5"
+    "vite": "^5.3.5",
+    "vite-bundle-analyzer": "^1.1.0"
   }
 }
