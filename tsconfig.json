@@ -28,15 +28,6 @@
     "noUnusedParameters": false,
     "exactOptionalPropertyTypes": false
   },
-  "include": [
-    "src/**/*",
-    "*.ts",
-    "*.js"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts"
-  ]
+  "include": ["src/**/*", "*.ts", "*.js"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
 }

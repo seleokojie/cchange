@@ -5,7 +5,7 @@ import { visualizer } from 'rollup-plugin-visualizer';
 export default defineConfig({
   // Entry point - use current directory as root
   root: '.',
-  
+
   // Build configuration
   build: {
     outDir: 'dist',
@@ -28,14 +28,14 @@ export default defineConfig({
         // Optimize chunk naming
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
-        assetFileNames: (assetInfo) => {
+        assetFileNames: assetInfo => {
           const info = assetInfo.name?.split('.') ?? [];
           const ext = info[info.length - 1];
           if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext ?? '')) {
             return `assets/images/[name]-[hash].${ext}`;
           }
           return `assets/[ext]/[name]-[hash].${ext}`;
-        }
+        },
       },
       // External dependencies (if needed for CDN)
       external: [],
@@ -49,52 +49,52 @@ export default defineConfig({
       include: [/node_modules/],
     },
   },
-  
+
   // Development server
   server: {
     port: 5173,
     open: false,
-    cors: true
+    cors: true,
   },
-  
+
   // Asset handling
   publicDir: 'assets',
-  
+
   // Plugins
   plugins: [
     legacy({
       targets: ['defaults', 'not IE 11'],
       // Reduce polyfill size
-      additionalLegacyPolyfills: ['regenerator-runtime/runtime']
+      additionalLegacyPolyfills: ['regenerator-runtime/runtime'],
     }),
     // Bundle analyzer (only in build mode)
     visualizer({
       filename: 'dist/stats.html',
       open: false,
       gzipSize: true,
-      brotliSize: true
-    })
+      brotliSize: true,
+    }),
   ],
-  
+
   // TypeScript resolution
   resolve: {
     extensions: ['.ts', '.js', '.json'],
     // Tree shaking optimization
     alias: {
-      '@': '/src'
-    }
+      '@': '/src',
+    },
   },
-  
+
   // Optimizations
   esbuild: {
     target: 'es2020',
     // Remove console.log in production
     drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
   },
-  
+
   // Dependency optimization
   optimizeDeps: {
     include: ['three', 'gsap', 'd3'],
-    exclude: ['@types/three', '@types/d3']
-  }
+    exclude: ['@types/three', '@types/d3'],
+  },
 });

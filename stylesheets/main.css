@@ -1,15 +1,15 @@
 * {
-    overflow: hidden;
-    margin: 0;
-    color:white;
-    font-family: Georgia, 'Times New Roman', Times, serif;
-    font-size: 15px;
-    /* removes scroll bars */
+  overflow: hidden;
+  margin: 0;
+  color: white;
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-size: 15px;
+  /* removes scroll bars */
 }
 
-.animate-modal{
-    animation: show 0.8s;
-    animation-fill-mode: forwards;
+.animate-modal {
+  animation: show 0.8s;
+  animation-fill-mode: forwards;
 }
 
 #modal {
@@ -25,7 +25,7 @@
   transition: opacity 0.5s ease-out;
 }
 
-#modal-background{
+#modal-background {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -34,10 +34,10 @@
   transition: opacity 0.5s ease;
 }
 
-#about-modal{
+#about-modal {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;;
+  justify-content: space-between;
   padding: 30px;
   border-radius: 2px 40px 2px 40px;
   height: 50%;
@@ -53,31 +53,31 @@
     align-self: center;
     font-weight: 700;;
 } */
-#logo{
-    align-self: center;
+#logo {
+  align-self: center;
 }
 
-#logo img{
-    max-height: 80px;
-    max-width: 80px;
+#logo img {
+  max-height: 80px;
+  max-width: 80px;
 }
 
-#about-modal p{
-    font-size: 14px;
+#about-modal p {
+  font-size: 14px;
 }
 
-#modal-content p{
-    margin-bottom: 15px;
+#modal-content p {
+  margin-bottom: 15px;
 }
 
-#intro{
-    color: #cc2dff;
+#intro {
+  color: #cc2dff;
 }
-#directions{
-    color: #9a6bff;
+#directions {
+  color: #9a6bff;
 }
-#controls{
-    color: #63b0ff
+#controls {
+  color: #63b0ff;
 }
 
 #about-modal {
@@ -107,14 +107,14 @@
   outline: none;
 }
 
-.modal-icons svg{
-    padding-right: 10px;
-    font-size: medium;
+.modal-icons svg {
+  padding-right: 10px;
+  font-size: medium;
 }
 
-.modal-icons  svg:hover {
+.modal-icons svg:hover {
   box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.2);
-  transform: translate(2px, 2px); 
+  transform: translate(2px, 2px);
   /* border-radius: 10px; */
 }
 #close-modal {
@@ -132,69 +132,73 @@
 
 #close-modal:hover {
   text-decoration: underline;
-  transform: translate(4px, 4px); 
+  transform: translate(4px, 4px);
   box-shadow: 5px 5px 10px 0 rgb(0 0 0 / 40%);
-  color: #AAAAAA;
-  border-color: #AAAAAA;
+  color: #aaaaaa;
+  border-color: #aaaaaa;
 }
 
-@keyframes show{
-    0%{
-        opacity: 1;
-    }
-    100%{
-        opacity: 0;
-    }
+@keyframes show {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
-#page-header, #years-box, #instructions-one-box, #explanation, #play-button{
-    position: absolute;
-    display: flex;
+#page-header,
+#years-box,
+#instructions-one-box,
+#explanation,
+#play-button {
+  position: absolute;
+  display: flex;
 }
 
-#page-header{
-    top: 6vh;
-    left: 3vw;
-    font-size: 20px;
-    font-weight: 700;
-    width: 30vw;
+#page-header {
+  top: 6vh;
+  left: 3vw;
+  font-size: 20px;
+  font-weight: 700;
+  width: 30vw;
 }
 
-#years-box{
-    top: 25vh;
+#years-box {
+  top: 25vh;
 }
 
-#instructions-one-box{
-    bottom: 6vh;
-    left: 3vw;
-    width: 30vw;
+#instructions-one-box {
+  bottom: 6vh;
+  left: 3vw;
+  width: 30vw;
 }
 
-#play-button{
+#play-button {
   top: 21vh;
   left: 4vw;
 }
 
-#play-button svg{
+#play-button svg {
   font-size: x-large;
 }
 
-#play-button:hover{
+#play-button:hover {
   cursor: pointer;
 }
 
-#years-list li{
-    padding-top: 50%;
-    list-style: none;
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
-    font-size: 11px;
+#years-list li {
+  padding-top: 50%;
+  list-style: none;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-size: 11px;
 }
 
-#years-list li:hover{
-    cursor: pointer;
-    font-size: 13px;
-    color: #AAAAAA;
-    /* text-decoration: underline; */
+#years-list li:hover {
+  cursor: pointer;
+  font-size: 13px;
+  color: #aaaaaa;
+  /* text-decoration: underline; */
 }
 
 /* .selected-year {
@@ -202,7 +206,7 @@
     text-decoration: underline;
 } */
 
-#years-list svg{
+#years-list svg {
   color: white;
   padding-right: 3px;
   visibility: hidden;
@@ -214,22 +218,20 @@
   right: 3vw;
 }
 
-#explanation span, #explanation a{
+#explanation span,
+#explanation a {
   font-size: 12px;
-  color: #AAAAAA;
+  color: #aaaaaa;
   font-style: oblique;
 }
 
-#explanation svg{
+#explanation svg {
   padding-left: 5px;
 }
 
-.bullet{
+.bullet {
   padding: 0 5px;
 }
- #explanation a:hover{
-   cursor: pointer;
- }
-
-
-
+#explanation a:hover {
+  cursor: pointer;
+}

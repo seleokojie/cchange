@@ -1,86 +1,123 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta property="og:image" content="./images/featured-image.png" data-addsearch="no_crop">
-    
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      property="og:image"
+      content="./images/featured-image.png"
+      data-addsearch="no_crop"
+    />
+
     <!-- Preload critical assets for better performance -->
-    <link rel="preload" href="/images/BM.jpeg" as="image" crossorigin="anonymous">
-    <link rel="preload" href="/images/earthbump4k.jpg" as="image" crossorigin="anonymous">
-    <link rel="preload" href="/images/earthspec4k.jpg" as="image" crossorigin="anonymous">
-    <link rel="preload" href="/images/earthhiresclouds4K.jpg" as="image" crossorigin="anonymous">
-    
+    <link
+      rel="preload"
+      href="/images/BM.jpeg"
+      as="image"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="preload"
+      href="/images/earthbump4k.jpg"
+      as="image"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="preload"
+      href="/images/earthspec4k.jpg"
+      as="image"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="preload"
+      href="/images/earthhiresclouds4K.jpg"
+      as="image"
+      crossorigin="anonymous"
+    />
+
     <!-- DNS prefetch for external resources -->
-    <link rel="dns-prefetch" href="//use.fontawesome.com">
-    
-    <link rel="stylesheet" type="text/css" href="stylesheets/main.css" media="screen"/>
-    <link rel="icon" type="image/png" href="./images/cChange_Logo.png">
-    
+    <link rel="dns-prefetch" href="//use.fontawesome.com" />
+
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="stylesheets/main.css"
+      media="screen"
+    />
+    <link rel="icon" type="image/png" href="./images/cChange_Logo.png" />
+
     <!-- Load FontAwesome with defer for better performance -->
-    <script defer src="https://use.fontawesome.com/releases/v5.15.1/js/all.js" data-auto-a11y="true"></script>
-    
+    <script
+      defer
+      src="https://use.fontawesome.com/releases/v5.15.1/js/all.js"
+      data-auto-a11y="true"
+    ></script>
+
     <title>Climate Change Visualizer</title>
-    
+
     <!-- Performance hint for modern browsers -->
-    <meta name="theme-color" content="#1a447e">
-    
+    <meta name="theme-color" content="#1a447e" />
+
     <!-- Loading state CSS -->
     <style>
-        #loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1a447e, #2c5aa0);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            color: white;
-            font-family: Arial, sans-serif;
-            transition: opacity 0.5s ease-out;
+      #loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #1a447e, #2c5aa0);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        color: white;
+        font-family: Arial, sans-serif;
+        transition: opacity 0.5s ease-out;
+      }
+
+      .loading-content {
+        text-align: center;
+      }
+
+      .spinner {
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top: 3px solid white;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
         }
-        
-        .loading-content {
-            text-align: center;
+        100% {
+          transform: rotate(360deg);
         }
-        
-        .spinner {
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top: 3px solid white;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
+      }
+
+      .hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
     </style>
-</head>
-<body>
-<!-- Loading overlay for better UX -->
-<div id="loading-overlay">
-    <div class="loading-content">
+  </head>
+  <body>
+    <!-- Loading overlay for better UX -->
+    <div id="loading-overlay">
+      <div class="loading-content">
         <div class="spinner"></div>
         <h2>Loading Climate Visualization...</h2>
         <p>Preparing 3D globe and climate data</p>
+      </div>
     </div>
-</div>
 
-<h1 id="page-header">Surface Temperature Over a Century</h1>
-<div id="years-box">
-    <ul id="years-list">
+    <h1 id="page-header">Surface Temperature Over a Century</h1>
+    <div id="years-box">
+      <ul id="years-list">
         <li id="1910"><i class="fas fa-check-square checked"></i>1910s</li>
         <li id="1920"><i class="fas fa-check-square checked"></i>1920s</li>
         <li id="1930"><i class="fas fa-check-square checked"></i>1930s</li>
@@ -89,61 +126,69 @@
         <li id="1990"><i class="fas fa-check-square checked"></i>1990s</li>
         <li id="2000"><i class="fas fa-check-square checked"></i>2000s</li>
         <li id="2010"><i class="fas fa-check-square checked"></i>2010s</li>
-    </ul>
-</div>
-<div id="instructions-one-box">
-    The color and height of the spikes are scaled to show how much average temperature (°F) has changed from the
-    1951-1980 average. Blues and Purples (25°F - 32°F), shows temperatures cooler than the average. Reds, Yellows and
-    Oranges (32°F - 40°F) show
-    temperatures warmer than the average.
-</div>
-<div id="play-button">
-    <i class="far fa-play-circle"></i>
-</div>
+      </ul>
+    </div>
+    <div id="instructions-one-box">
+      The color and height of the spikes are scaled to show how much average
+      temperature (°F) has changed from the 1951-1980 average. Blues and Purples
+      (25°F - 32°F), shows temperatures cooler than the average. Reds, Yellows
+      and Oranges (32°F - 40°F) show temperatures warmer than the average.
+    </div>
+    <div id="play-button">
+      <i class="far fa-play-circle"></i>
+    </div>
 
-<!-- Load main script with module for better performance -->
-<script type="module" src="./cChange.ts"></script>
+    <!-- Load main script with module for better performance -->
+    <script type="module" src="./cChange.ts"></script>
 
-<!-- Performance monitoring script -->
-<script>
-    // Hide loading overlay when page is fully loaded
-    window.addEventListener('load', () => {
+    <!-- Performance monitoring script -->
+    <script>
+      // Hide loading overlay when page is fully loaded
+      window.addEventListener('load', () => {
         const loadingOverlay = document.getElementById('loading-overlay');
         if (loadingOverlay) {
+          setTimeout(() => {
+            loadingOverlay.classList.add('hidden');
             setTimeout(() => {
-                loadingOverlay.classList.add('hidden');
-                setTimeout(() => {
-                    loadingOverlay.remove();
-                }, 500);
-            }, 1000); // Show loading for at least 1 second
+              loadingOverlay.remove();
+            }, 500);
+          }, 1000); // Show loading for at least 1 second
         }
-    });
-    
-    // Performance monitoring
-    if ('performance' in window && 'timing' in window.performance) {
+      });
+
+      // Performance monitoring
+      if ('performance' in window && 'timing' in window.performance) {
         window.addEventListener('load', () => {
-            setTimeout(() => {
-                const perfData = window.performance.timing;
-                const loadTime = perfData.loadEventEnd - perfData.navigationStart;
-                console.log(`Page load time: ${loadTime}ms`);
-                
-                if (loadTime > 5000) {
-                    console.warn('⚠️ Slow page load detected. Consider optimizing assets.');
-                }
-            }, 0);
+          setTimeout(() => {
+            const perfData = window.performance.timing;
+            const loadTime = perfData.loadEventEnd - perfData.navigationStart;
+            console.log(`Page load time: ${loadTime}ms`);
+
+            if (loadTime > 5000) {
+              console.warn(
+                '⚠️ Slow page load detected. Consider optimizing assets.'
+              );
+            }
+          }, 0);
         });
-    }
-</script>
-</body>
-<footer>
+      }
+    </script>
+  </body>
+  <footer>
     <div id="explanation">
-        <span>Sele Okojie </span>
-        <span class="bullet">•</span>
-        <span> COSC 471 Final Project</span>
-        <span class="bullet">•</span>
-        <span>Data from
-            <a href="https://data.giss.nasa.gov/gistemp/" target="_blank" rel="noopener">NASA-GISTEMP-v4</a>
-        </span>
+      <span>Sele Okojie </span>
+      <span class="bullet">•</span>
+      <span> COSC 471 Final Project</span>
+      <span class="bullet">•</span>
+      <span
+        >Data from
+        <a
+          href="https://data.giss.nasa.gov/gistemp/"
+          target="_blank"
+          rel="noopener"
+          >NASA-GISTEMP-v4</a
+        >
+      </span>
     </div>
-</footer>
+  </footer>
 </html>

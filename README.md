@@ -29,7 +29,7 @@ The NASA GISS temperature dataset represents one of the most comprehensive and r
 
    ```bash
    npm run build          # Production build
-   npm run build:dev      # Development build  
+   npm run build:dev      # Development build
    npm run dev            # Development build with watch mode
    ```
 
