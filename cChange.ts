@@ -212,16 +212,39 @@ const camera: THREE.PerspectiveCamera = new THREE.PerspectiveCamera(
   1000
 );
 
-// Optimized renderer settings for performance
+// WebGL2 renderer
+const canvas = document.createElement('canvas');
+const gl = canvas.getContext('webgl2');
 const renderer: THREE.WebGLRenderer = new THREE.WebGLRenderer({
+  canvas: canvas,
+  context: gl || undefined,
   antialias: window.devicePixelRatio <= 1, // Only use antialias on lower DPI displays
   powerPreference: 'high-performance',
   stencil: false, // Disable stencil buffer if not needed
   depth: true,
+  alpha: false, // Opaque background for better performance
+  preserveDrawingBuffer: false, // Better memory management
 });
+
+// Check WebGL2 support and log capabilities
+if (gl) {
+  console.warn('WebGL2 support detected - using advanced features');
+  // WebGL2 features are automatically detected by Three.js
+} else {
+  console.warn('WebGL2 not supported - falling back to WebGL1');
+}
+
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance
 renderer.shadowMap.enabled = false; // Disable shadows for better performance
+
+// Enable advanced rendering features if available
+if (renderer.capabilities.isWebGL2) {
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
+}
+
 document.body.appendChild(renderer.domElement);
 
 const controls: OrbitControls = new OrbitControls(camera, renderer.domElement);

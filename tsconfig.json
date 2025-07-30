@@ -29,5 +29,13 @@
     "exactOptionalPropertyTypes": false
   },
   "include": ["src/**/*", "*.ts", "*.js"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "eslint.config.js",
+    "vite.config.ts",
+    "vitest.config.ts"
+  ]
 }

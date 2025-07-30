@@ -1,10 +1,71 @@
+/* ==========================================================================
+  * cChange - Main CSS Stylesheet
+   ========================================================================== */
+
+/* CSS Custom Properties for consistent theming */
+:root {
+  --primary-color: #1a447e;
+  --background-color: #000000;
+  --text-color: #ffffff;
+  --accent-color: #4a90e2;
+  --modal-background: rgba(192, 192, 192, 0.49);
+  --modal-content-bg: #242435;
+  --border-radius: 8px;
+  --box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.4);
+  --transition: all 0.3s ease;
+}
+
+/* Base reset and mobile-first styles */
 * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px; /* Base font size for rem calculations */
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+body {
   overflow: hidden;
   margin: 0;
-  color: white;
+  color: var(--text-color);
   font-family: Georgia, 'Times New Roman', Times, serif;
-  font-size: 15px;
-  /* removes scroll bars */
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.5;
+  background-color: var(--background-color);
+  touch-action: manipulation; /* Improves touch responsiveness */
+}
+
+/* Canvas and WebGL container responsiveness */
+canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100vw;
+  max-height: 100vh;
+  touch-action: none; /* Prevent touch scrolling on canvas */
+}
+
+/* Responsive breakpoints */
+@media screen and (min-width: 768px) {
+  body {
+    font-size: 0.9375rem; /* 15px */
+  }
+}
+
+@media screen and (min-width: 1024px) {
+  body {
+    font-size: 1rem; /* 16px */
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  body {
+    font-size: 1.0625rem; /* 17px */
+  }
 }
 
 .animate-modal {
@@ -18,11 +79,10 @@
   bottom: 0;
   right: 0;
   left: 0;
-  background: #c0c0c07d;
-  /* border: 2px solid red; */
+  background: var(--modal-background);
   z-index: 10;
   backdrop-filter: blur(3px);
-  transition: opacity 0.5s ease-out;
+  transition: var(--transition);
 }
 
 #modal-background {
@@ -31,21 +91,45 @@
   align-items: center;
   height: 100%;
   width: 100%;
-  transition: opacity 0.5s ease;
+  padding: 1rem;
+  transition: var(--transition);
 }
 
 #about-modal {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 30px;
-  border-radius: 2px 40px 2px 40px;
-  height: 50%;
-  width: 45%;
-  background: #242435;
-  color: white;
-  box-shadow: 5px 5px 10px 0 rgb(0 0 0 / 40%);
-  transition: opacity 0.5s ease;
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  width: 100%;
+  max-width: 90vw;
+  max-height: 80vh;
+  background: var(--modal-content-bg);
+  color: var(--text-color);
+  box-shadow: var(--box-shadow);
+  transition: var(--transition);
+  overflow-y: auto;
+}
+
+/* Tablet styles */
+@media screen and (min-width: 768px) {
+  #about-modal {
+    width: 70%;
+    max-width: 600px;
+    padding: 2rem;
+  }
+}
+
+/* Desktop styles */
+@media screen and (min-width: 1024px) {
+  #about-modal {
+    width: 45%;
+    max-width: 700px;
+    height: 50%;
+    max-height: 500px;
+    border-radius: 2px 40px 2px 40px;
+    padding: 2.5rem;
+  }
 }
 
 /* #about-modal h1{
