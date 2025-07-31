@@ -64,8 +64,9 @@ async function loadData(url: string): Promise<YearData[]> {
 /**
  * Initializes the application by loading climate data and setting the initial year.
  * @returns A promise that resolves when the initialization is complete.
+ * @deprecated Use initWithProgress instead for better UX
  */
-async function init(): Promise<void> {
+async function _init(): Promise<void> {
   // Load climate data
   data = await loadData('/data.json');
   console.warn('Climate data loaded:', data.length, 'time periods');
@@ -84,11 +85,76 @@ async function init(): Promise<void> {
   }
 }
 
+/**
+ * Updates the loading progress indicator
+ * @param progress Progress percentage (0-100)
+ * @param message Loading message to display
+ */
+function updateLoadingProgress(progress: number, message: string): void {
+  const progressFill = document.getElementById('progress-fill');
+  const progressText = document.getElementById('progress-text');
+  const loadingMessage = document.getElementById('loading-message');
+
+  if (progressFill) {
+    progressFill.style.width = `${Math.min(100, Math.max(0, progress))}%`;
+  }
+
+  if (progressText) {
+    progressText.textContent = `${Math.round(progress)}%`;
+  }
+
+  if (loadingMessage) {
+    loadingMessage.textContent = message;
+  }
+}
+
+/**
+ * Enhanced initialization with progress tracking
+ * @returns A promise that resolves when the initialization is complete.
+ */
+async function initWithProgress(): Promise<void> {
+  updateLoadingProgress(10, 'Loading climate data...');
+
+  // Load climate data
+  data = await loadData('/data.json');
+  console.warn('Climate data loaded:', data.length, 'time periods');
+  updateLoadingProgress(40, 'Processing climate data...');
+
+  // Set initial year and render
+  year = '1910';
+  markers = centuryData(year);
+  updateLoadingProgress(70, 'Initializing 3D visualization...');
+
+  // Give the browser time to update the progress
+  await new Promise(resolve => setTimeout(resolve, 100));
+
+  renderAnomalies();
+  updateLoadingProgress(90, 'Finalizing setup...');
+
+  // Show initial year checkbox
+  const checkedElements: NodeListOf<Element> =
+    document.querySelectorAll('.checked');
+  const yearIndex: number = years.indexOf(year);
+  if (checkedElements[yearIndex]) {
+    (checkedElements[yearIndex] as HTMLElement).style.visibility = 'visible';
+  }
+
+  updateLoadingProgress(100, 'Ready!');
+
+  // Announce completion to screen readers
+  announceToScreenReader(
+    'Climate visualization loaded and ready for interaction'
+  );
+}
+
 // DOM Content Loaded handler with proper typing
 document.addEventListener('DOMContentLoaded', async (): Promise<void> => {
   try {
-    // Initialize the application
-    await init();
+    // Initialize the application with progress tracking
+    await initWithProgress();
+
+    // Brief delay to show completion
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     // Hide loading overlay after initialization
     const loadingOverlay = document.getElementById('loading-overlay');
@@ -212,8 +278,15 @@ const camera: THREE.PerspectiveCamera = new THREE.PerspectiveCamera(
   1000
 );
 
-// WebGL2 renderer
-const canvas = document.createElement('canvas');
+// Use the canvas element from HTML
+const canvas = document.getElementById(
+  'visualization-canvas'
+) as HTMLCanvasElement;
+if (!canvas) {
+  throw new Error(
+    'Canvas element not found. Make sure the HTML contains a canvas with id="visualization-canvas"'
+  );
+}
 const gl = canvas.getContext('webgl2');
 const renderer: THREE.WebGLRenderer = new THREE.WebGLRenderer({
   canvas: canvas,
@@ -244,8 +317,6 @@ if (renderer.capabilities.isWebGL2) {
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.0;
 }
-
-document.body.appendChild(renderer.domElement);
 
 const controls: OrbitControls = new OrbitControls(camera, renderer.domElement);
 
@@ -417,7 +488,7 @@ addSceneObjects(scene);
 camera.position.z = 20;
 
 // Optimized control settings for better performance
-controls.minDistance = 8;
+controls.minDistance = 12;
 controls.maxDistance = 20;
 controls.enablePan = false;
 controls.enableDamping = true; // Add damping for smoother controls
@@ -435,11 +506,16 @@ const playButtonElement: HTMLElement | null =
 
 if (yearsListElement) {
   yearsListElement.addEventListener('click', onYearsClick, false);
+  yearsListElement.addEventListener('keydown', onYearsKeyDown, false);
 }
 
 if (playButtonElement) {
   playButtonElement.addEventListener('click', onPlayClick, false);
+  playButtonElement.addEventListener('keydown', onPlayKeyDown, false);
 }
+
+// Add keyboard shortcuts for global navigation
+document.addEventListener('keydown', onGlobalKeyDown, false);
 
 /**
  * Handles the window resize event to adjust camera and renderer.
@@ -451,11 +527,139 @@ function onWindowResize(): void {
 }
 
 /**
- * Handles the click event on the years list.
- * @param e The click event.
+ * Handles keyboard navigation for the years list
+ * @param e The keyboard event
  */
-function onYearsClick(e: Event): void {
-  e.preventDefault();
+function onYearsKeyDown(e: KeyboardEvent): void {
+  const currentTarget = e.target as HTMLElement;
+  const yearsList = document.querySelectorAll('#years-list li');
+  const currentIndex = Array.from(yearsList).indexOf(currentTarget);
+
+  let newIndex = currentIndex;
+
+  switch (e.key) {
+    case 'ArrowUp':
+      e.preventDefault();
+      newIndex = currentIndex > 0 ? currentIndex - 1 : yearsList.length - 1;
+      break;
+    case 'ArrowDown':
+      e.preventDefault();
+      newIndex = currentIndex < yearsList.length - 1 ? currentIndex + 1 : 0;
+      break;
+    case 'Home':
+      e.preventDefault();
+      newIndex = 0;
+      break;
+    case 'End':
+      e.preventDefault();
+      newIndex = yearsList.length - 1;
+      break;
+    case 'Enter':
+    case ' ':
+      e.preventDefault();
+      selectYear(currentTarget);
+      announceToScreenReader(`Selected decade: ${currentTarget.textContent}`);
+      return;
+    default:
+      return;
+  }
+
+  // Update focus and tabindex
+  yearsList.forEach((li, index) => {
+    (li as HTMLElement).tabIndex = index === newIndex ? 0 : -1;
+  });
+
+  (yearsList[newIndex] as HTMLElement).focus();
+}
+
+/**
+ * Handles keyboard events for the play button
+ * @param e The keyboard event
+ */
+function onPlayKeyDown(e: KeyboardEvent): void {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    onPlayClick(e);
+  }
+}
+
+/**
+ * Handles global keyboard shortcuts
+ * @param e The keyboard event
+ */
+function onGlobalKeyDown(e: KeyboardEvent): void {
+  // Skip if user is typing in an input
+  if (
+    e.target instanceof HTMLInputElement ||
+    e.target instanceof HTMLTextAreaElement
+  ) {
+    return;
+  }
+
+  switch (e.key) {
+    case 'p':
+    case 'P':
+      if (!e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        const playButton = document.getElementById('play-button');
+        if (playButton) {
+          (playButton as HTMLButtonElement).click();
+          announceToScreenReader('Playing animation through all decades');
+        }
+      }
+      break;
+    case '?':
+      e.preventDefault();
+      showKeyboardShortcuts();
+      break;
+    case 'Escape': {
+      // Focus management for modals or overlays
+      const modal = document.getElementById('modal');
+      if (modal && modal.style.display !== 'none') {
+        const closeButton = document.getElementById('close-modal');
+        if (closeButton) {
+          (closeButton as HTMLButtonElement).click();
+        }
+      }
+      break;
+    }
+  }
+}
+
+/**
+ * Announces text to screen readers
+ * @param message The message to announce
+ */
+function announceToScreenReader(message: string): void {
+  const announcer = document.getElementById('sr-announcements');
+  if (announcer) {
+    announcer.textContent = message;
+    // Clear the message after a delay to allow for re-announcements
+    setTimeout(() => {
+      announcer.textContent = '';
+    }, 1000);
+  }
+}
+
+/**
+ * Displays keyboard shortcuts information
+ */
+function showKeyboardShortcuts(): void {
+  announceToScreenReader(
+    'Keyboard shortcuts: P to play animation, Arrow keys to navigate decades, Enter or Space to select, Escape to close dialogs'
+  );
+}
+
+/**
+ * Selects a year and updates the visualization
+ * @param target The target element
+ */
+function selectYear(target: HTMLElement): void {
+  // Update aria-selected attributes
+  document.querySelectorAll('#years-list li').forEach(li => {
+    (li as HTMLElement).setAttribute('aria-selected', 'false');
+  });
+  target.setAttribute('aria-selected', 'true');
 
   // Hide all year indicators
   document
@@ -464,10 +668,8 @@ function onYearsClick(e: Event): void {
       (yearElement as HTMLElement).style.visibility = 'hidden';
     });
 
-  const target = e.target as HTMLElement;
-
   // Show selected year indicator
-  const targetIcon: HTMLElement | null = target.querySelector('i') || target;
+  const targetIcon: HTMLElement | null = target.querySelector('i');
   if (targetIcon) {
     targetIcon.style.visibility = 'visible';
   }
@@ -477,6 +679,17 @@ function onYearsClick(e: Event): void {
   year = target.id || target.parentElement?.id || year;
   markers = centuryData(year);
   renderAnomalies();
+}
+
+/**
+ * Handles the click event on the years list.
+ * @param e The click event.
+ */
+function onYearsClick(e: Event): void {
+  e.preventDefault();
+  const target = e.target as HTMLElement;
+  selectYear(target);
+  announceToScreenReader(`Selected decade: ${target.textContent}`);
 }
 
 /**
